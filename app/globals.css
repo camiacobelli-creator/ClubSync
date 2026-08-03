@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  --color-rink: #0B1D30;
+  --color-rink-2: #122A44;
+  --color-ice: #F2F7FA;
+  --color-ice-dim: #B9C6D4;
+  --color-board-red: #C8102E;
+  --color-faceoff-blue: #2E7DD7;
+  --color-slate: #6B7C8F;
+  --color-line-white: rgba(242, 247, 250, 0.12);
+}
+
+@theme inline {
+  --color-rink: var(--color-rink);
+  --color-rink-2: var(--color-rink-2);
+  --color-ice: var(--color-ice);
+  --color-ice-dim: var(--color-ice-dim);
+  --color-board-red: var(--color-board-red);
+  --color-faceoff-blue: var(--color-faceoff-blue);
+  --color-slate: var(--color-slate);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  background-color: var(--color-rink);
+  color: var(--color-ice);
+}
+
+.font-display {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.font-mono {
+  font-family: var(--font-mono), monospace;
+}
+
+/* faceoff-dot: signature element for an open weekend */
+.faceoff-dot {
+  position: relative;
+}
+.faceoff-dot::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 1.5px solid currentColor;
+  border-radius: 9999px;
+  opacity: 0.55;
+}
+
+::selection {
+  background: var(--color-board-red);
+  color: var(--color-ice);
+}
