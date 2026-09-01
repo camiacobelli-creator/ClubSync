@@ -132,6 +132,7 @@ export default function OnboardingPage() {
     const { data: matchCount } = await supabase.rpc("match_pending_opponents", {
       new_team_id: team.id,
       new_team_school: finalSchool,
+      new_team_division: division,
     });
 
     await refresh();

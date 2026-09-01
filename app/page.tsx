@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [newPref, setNewPref] = useState<Preference>("either");
   const [newOpponentTeamId, setNewOpponentTeamId] = useState(""); // "" = unset, "other" = off-platform
   const [newOpponentOther, setNewOpponentOther] = useState("");
+  const [newOpponentDivision, setNewOpponentDivision] = useState("D1");
   const [newIsHome, setNewIsHome] = useState(true);
   const [newAskTeamId, setNewAskTeamId] = useState(""); // for open/busy days — optional direct ask
   const [newTime, setNewTime] = useState("");
@@ -110,6 +111,10 @@ export default function Dashboard() {
         opponent_name:
           newStatus === "scheduled" && newOpponentTeamId === "other" && newOpponentOther
             ? newOpponentOther
+            : null,
+        opponent_division:
+          newStatus === "scheduled" && newOpponentTeamId === "other" && newOpponentOther
+            ? newOpponentDivision
             : null,
         is_home: newStatus === "scheduled" ? newIsHome : null,
         game_time: newStatus === "scheduled" && newTime ? newTime : null,
@@ -550,6 +555,20 @@ export default function Dashboard() {
                   </p>
                 </div>
               )}
+              {newOpponentTeamId === "other" && newOpponentOther && (
+                <div>
+                  <label className="block text-xs text-ice-dim mb-1">Their division</label>
+                  <select
+                    value={newOpponentDivision}
+                    onChange={(e) => setNewOpponentDivision(e.target.value)}
+                    className="bg-rink border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
+                  >
+                    <option value="D1">D1</option>
+                    <option value="D2">D2</option>
+                    <option value="D3">D3</option>
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-xs text-ice-dim mb-1">Home or away</label>
                 <select
@@ -633,6 +652,7 @@ function GameRow({
     weekend.opponent_team_id ?? (weekend.opponent_name ? "other" : "")
   );
   const [opponentOther, setOpponentOther] = useState(weekend.opponent_name ?? "");
+  const [opponentDivision, setOpponentDivision] = useState(weekend.opponent_division ?? "D1");
   const [isHome, setIsHome] = useState(weekend.is_home ?? true);
   const [time, setTime] = useState(weekend.game_time ?? "");
   const [location, setLocation] = useState(weekend.game_location ?? "");
@@ -653,6 +673,7 @@ function GameRow({
       .update({
         opponent_team_id: isPlatformOpponent ? opponentTeamId : null,
         opponent_name: !isPlatformOpponent && opponentOther ? opponentOther : null,
+        opponent_division: !isPlatformOpponent && opponentOther ? opponentDivision : null,
         is_home: isHome,
         game_time: time || null,
         game_location: location || null,
@@ -757,6 +778,20 @@ function GameRow({
                   {s.name}
                 </option>
               ))}
+            </select>
+          </div>
+        )}
+        {opponentTeamId === "other" && opponentOther && (
+          <div>
+            <label className="block text-xs text-ice-dim mb-1">Their division</label>
+            <select
+              value={opponentDivision}
+              onChange={(e) => setOpponentDivision(e.target.value)}
+              className="bg-rink border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
+            >
+              <option value="D1">D1</option>
+              <option value="D2">D2</option>
+              <option value="D3">D3</option>
             </select>
           </div>
         )}

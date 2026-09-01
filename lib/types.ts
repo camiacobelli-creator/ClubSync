@@ -49,6 +49,7 @@ export type Weekend = {
   preference: Preference | null;
   opponent_team_id: string | null;
   opponent_name: string | null;
+  opponent_division: string | null;
   game_time: string | null;
   game_location: string | null;
   game_notes: string | null;
