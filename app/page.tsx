@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 import { Weekend, Team, Preference, WeekendStatus, TeamJoinRequest, Profile, School } from "@/lib/types";
+import { fetchAllSchools } from "@/lib/schools";
 import ScheduleGrid from "@/components/ScheduleGrid";
 import * as XLSX from "xlsx";
 
@@ -56,13 +57,13 @@ export default function Dashboard() {
         .select("*")
         .eq("team_id", team.id)
         .eq("status", "pending"),
-      supabase.from("schools").select("*").order("name"),
+      fetchAllSchools(supabase),
     ]).then(async ([w, r, t, jr, sc]) => {
       setWeekends((w.data as Weekend[]) ?? []);
       setPendingCount(r.count ?? 0);
       const teamList = (t.data as Team[]) ?? [];
       setAllTeams(teamList);
-      setSchools((sc.data as School[]) ?? []);
+      setSchools(sc);
       const map: Record<string, string> = {};
       teamList.forEach((tm) => (map[tm.id] = tm.short_name));
       setOpponentNames(map);

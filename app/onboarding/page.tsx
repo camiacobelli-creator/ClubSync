@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Team, TeamJoinRequest, School, Sport } from "@/lib/types";
+import { fetchAllSchools } from "@/lib/schools";
 
 export default function OnboardingPage() {
   const supabase = createClient();
@@ -44,14 +45,14 @@ export default function OnboardingPage() {
         .eq("profile_id", userId)
         .eq("status", "pending")
         .maybeSingle(),
-      supabase.from("schools").select("*").order("name"),
+      fetchAllSchools(supabase),
       supabase.from("sports").select("*").order("name"),
     ]).then(([t, r, sc, sp]) => {
       setTeams((t.data as Team[]) ?? []);
       const req = r.data as TeamJoinRequest | null;
       setPendingRequest(req);
       setMode(req ? "checking" : "choose");
-      setSchools((sc.data as School[]) ?? []);
+      setSchools(sc);
       const sportList = (sp.data as Sport[]) ?? [];
       setSports(sportList);
       if (sportList.length > 0) setSport(sportList[0].name);
