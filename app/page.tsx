@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 import { Weekend, Team, Preference, WeekendStatus, TeamJoinRequest, Profile, School } from "@/lib/types";
 import { fetchAllSchools } from "@/lib/schools";
+import { teamDisplayName } from "@/lib/teamDisplay";
 import ScheduleGrid from "@/components/ScheduleGrid";
 import * as XLSX from "xlsx";
 
@@ -24,6 +25,7 @@ export default function Dashboard() {
   const [pendingCount, setPendingCount] = useState(0);
   const [opponentNames, setOpponentNames] = useState<Record<string, string>>({});
   const [allTeams, setAllTeams] = useState<Team[]>([]);
+  const [teamLabel, setTeamLabel] = useState<string>("");
   const [schools, setSchools] = useState<School[]>([]);
   const [joinRequests, setJoinRequests] = useState<(TeamJoinRequest & { requester?: Profile })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ export default function Dashboard() {
   const [newPref, setNewPref] = useState<Preference>("either");
   const [newOpponentTeamId, setNewOpponentTeamId] = useState(""); // "" = unset, "other" = off-platform
   const [newOpponentOther, setNewOpponentOther] = useState("");
-  const [newOpponentDivision, setNewOpponentDivision] = useState("D1");
+  const [newOpponentTeamNumber, setNewOpponentTeamNumber] = useState(1);
   const [newIsHome, setNewIsHome] = useState(true);
   const [newAskTeamId, setNewAskTeamId] = useState(""); // for open/busy days — optional direct ask
   const [newTime, setNewTime] = useState("");
@@ -91,6 +93,11 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [team, supabase]);
 
+  useEffect(() => {
+    if (!team) return;
+    teamDisplayName(supabase, team).then(setTeamLabel);
+  }, [team, supabase]);
+
   async function handleAddWeekend(e: React.FormEvent) {
     e.preventDefault();
     if (!team || !newDate) return;
@@ -112,9 +119,9 @@ export default function Dashboard() {
           newStatus === "scheduled" && newOpponentTeamId === "other" && newOpponentOther
             ? newOpponentOther
             : null,
-        opponent_division:
+        opponent_team_number:
           newStatus === "scheduled" && newOpponentTeamId === "other" && newOpponentOther
-            ? newOpponentDivision
+            ? newOpponentTeamNumber
             : null,
         is_home: newStatus === "scheduled" ? newIsHome : null,
         game_time: newStatus === "scheduled" && newTime ? newTime : null,
@@ -280,7 +287,7 @@ export default function Dashboard() {
         <p className="text-xs uppercase tracking-widest text-faceoff-blue font-mono">
           Team profile
         </p>
-        <h1 className="font-display text-3xl font-semibold mt-1">{team.name}</h1>
+        <h1 className="font-display text-3xl font-semibold mt-1">{teamLabel || team.name}</h1>
         <p className="text-ice-dim mt-1">
           {team.city} · {team.conference}
         </p>
@@ -557,15 +564,15 @@ export default function Dashboard() {
               )}
               {newOpponentTeamId === "other" && newOpponentOther && (
                 <div>
-                  <label className="block text-xs text-ice-dim mb-1">Their division</label>
+                  <label className="block text-xs text-ice-dim mb-1">Their team</label>
                   <select
-                    value={newOpponentDivision}
-                    onChange={(e) => setNewOpponentDivision(e.target.value)}
+                    value={newOpponentTeamNumber}
+                    onChange={(e) => setNewOpponentTeamNumber(Number(e.target.value))}
                     className="bg-rink border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
                   >
-                    <option value="D1">D1</option>
-                    <option value="D2">D2</option>
-                    <option value="D3">D3</option>
+                    <option value={1}>1st team</option>
+                    <option value={2}>2nd team</option>
+                    <option value={3}>3rd team</option>
                   </select>
                 </div>
               )}
@@ -652,7 +659,7 @@ function GameRow({
     weekend.opponent_team_id ?? (weekend.opponent_name ? "other" : "")
   );
   const [opponentOther, setOpponentOther] = useState(weekend.opponent_name ?? "");
-  const [opponentDivision, setOpponentDivision] = useState(weekend.opponent_division ?? "D1");
+  const [opponentTeamNumber, setOpponentTeamNumber] = useState(weekend.opponent_team_number ?? 1);
   const [isHome, setIsHome] = useState(weekend.is_home ?? true);
   const [time, setTime] = useState(weekend.game_time ?? "");
   const [location, setLocation] = useState(weekend.game_location ?? "");
@@ -673,7 +680,7 @@ function GameRow({
       .update({
         opponent_team_id: isPlatformOpponent ? opponentTeamId : null,
         opponent_name: !isPlatformOpponent && opponentOther ? opponentOther : null,
-        opponent_division: !isPlatformOpponent && opponentOther ? opponentDivision : null,
+        opponent_team_number: !isPlatformOpponent && opponentOther ? opponentTeamNumber : null,
         is_home: isHome,
         game_time: time || null,
         game_location: location || null,
@@ -783,15 +790,15 @@ function GameRow({
         )}
         {opponentTeamId === "other" && opponentOther && (
           <div>
-            <label className="block text-xs text-ice-dim mb-1">Their division</label>
+            <label className="block text-xs text-ice-dim mb-1">Their team</label>
             <select
-              value={opponentDivision}
-              onChange={(e) => setOpponentDivision(e.target.value)}
+              value={opponentTeamNumber}
+              onChange={(e) => setOpponentTeamNumber(Number(e.target.value))}
               className="bg-rink border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
             >
-              <option value="D1">D1</option>
-              <option value="D2">D2</option>
-              <option value="D3">D3</option>
+              <option value={1}>1st team</option>
+              <option value={2}>2nd team</option>
+              <option value={3}>3rd team</option>
             </select>
           </div>
         )}

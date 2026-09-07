@@ -24,7 +24,7 @@ export default function OnboardingPage() {
   const [addingSchool, setAddingSchool] = useState(false);
   const [newSchoolName, setNewSchoolName] = useState("");
   const [sport, setSport] = useState("Ice Hockey");
-  const [division, setDivision] = useState<"D1" | "D2" | "D3">("D1");
+  const [teamNumber, setTeamNumber] = useState(1);
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [role, setRole] = useState("President");
@@ -97,13 +97,13 @@ export default function OnboardingPage() {
     const { data: team, error: teamErr } = await supabase
       .from("teams")
       .insert({
-        name: `${finalSchool} Club ${sport} (${division})`,
-        short_name: `${finalSchool} ${division}`,
+        name: `${finalSchool} Club ${sport}`,
+        short_name: finalSchool,
         city: state ? `${city}, ${state}` : city,
         conference: "ACC",
         school: finalSchool,
         sport,
-        division,
+        team_number: teamNumber,
       })
       .select()
       .single();
@@ -112,7 +112,7 @@ export default function OnboardingPage() {
       setLoading(false);
       setError(
         teamErr?.code === "23505"
-          ? `There's already a ${division} ${sport} team for ${finalSchool}. Try requesting to join it instead.`
+          ? `${finalSchool} already has a ${sport} team registered as your school's ${teamNumber === 1 ? "1st" : teamNumber === 2 ? "2nd" : "3rd"} team. Try requesting to join it, or pick a different team number.`
           : teamErr?.message ?? "Couldn't create team."
       );
       return;
@@ -132,7 +132,6 @@ export default function OnboardingPage() {
     const { data: matchCount } = await supabase.rpc("match_pending_opponents", {
       new_team_id: team.id,
       new_team_school: finalSchool,
-      new_team_division: division,
     });
 
     await refresh();
@@ -415,19 +414,19 @@ export default function OnboardingPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-ice-dim mb-1">Division</label>
+          <label className="block text-xs text-ice-dim mb-1">What team are you at your school?</label>
           <select
-            value={division}
-            onChange={(e) => setDivision(e.target.value as "D1" | "D2" | "D3")}
+            value={teamNumber}
+            onChange={(e) => setTeamNumber(Number(e.target.value))}
             className="w-full bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
           >
-            <option value="D1">D1</option>
-            <option value="D2">D2</option>
-            <option value="D3">D3</option>
+            <option value={1}>1st team (top team)</option>
+            <option value={2}>2nd team</option>
+            <option value={3}>3rd team</option>
           </select>
           <p className="text-xs text-ice-dim mt-1">
-            If your school already has a team at this sport, pick a different division —
-            e.g. a &quot;B team&quot; can register as D2.
+            If your school only has one team in this sport, leave this as &quot;1st team&quot; —
+            it won&apos;t be shown anywhere unless a 2nd or 3rd team from your school joins later.
           </p>
         </div>
         <select

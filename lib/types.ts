@@ -7,7 +7,7 @@ export type Team = {
   color_primary: string;
   school: string | null;
   sport: string | null;
-  division: "D1" | "D2" | "D3";
+  team_number: number;
   invite_code: string | null;
   created_at: string;
 };
@@ -49,7 +49,7 @@ export type Weekend = {
   preference: Preference | null;
   opponent_team_id: string | null;
   opponent_name: string | null;
-  opponent_division: string | null;
+  opponent_team_number: number | null;
   game_time: string | null;
   game_location: string | null;
   game_notes: string | null;

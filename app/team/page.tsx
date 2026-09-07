@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 import { Profile } from "@/lib/types";
+import { teamDisplayName } from "@/lib/teamDisplay";
 
 const ROLE_OPTIONS = [
   "President",
@@ -24,6 +25,7 @@ export default function TeamProfilePage() {
   const { team, profile, refresh } = useAuth();
   const [roster, setRoster] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [teamLabel, setTeamLabel] = useState<string>("");
 
   // Personal info form
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
@@ -61,6 +63,11 @@ export default function TeamProfilePage() {
   useEffect(() => {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [team, supabase]);
+
+  useEffect(() => {
+    if (!team) return;
+    teamDisplayName(supabase, team).then(setTeamLabel);
   }, [team, supabase]);
 
   async function handleSaveInfo(e: React.FormEvent) {
@@ -189,7 +196,7 @@ export default function TeamProfilePage() {
         <p className="text-xs uppercase tracking-widest text-faceoff-blue font-mono">
           Team profile
         </p>
-        <h1 className="font-display text-3xl font-semibold mt-1">{team.name}</h1>
+        <h1 className="font-display text-3xl font-semibold mt-1">{teamLabel || team.name}</h1>
         <p className="text-ice-dim mt-1">
           {team.city} · {team.conference}
         </p>
