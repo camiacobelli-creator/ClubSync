@@ -66,12 +66,14 @@ export default function TeamDetailPage() {
           <p className="text-ice-dim mt-1">{team.city}</p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <Link
-            href={`/messages/${team.id}`}
-            className="px-3 py-1.5 text-sm font-medium rounded-md border border-line-white text-ice-dim hover:text-ice hover:border-faceoff-blue"
-          >
-            Message {team.short_name}
-          </Link>
+          {myTeam && (
+            <Link
+              href={`/messages/${team.id}`}
+              className="px-3 py-1.5 text-sm font-medium rounded-md border border-line-white text-ice-dim hover:text-ice hover:border-faceoff-blue"
+            >
+              Message {team.short_name}
+            </Link>
+          )}
           <span
             className="w-4 h-4 rounded-full shrink-0"
             style={{ backgroundColor: team.color_primary }}
@@ -92,8 +94,9 @@ export default function TeamDetailPage() {
       <section>
         <h2 className="font-display text-lg font-semibold mb-2">Schedule</h2>
         <p className="text-sm text-ice-dim mb-4">
-          Click an open weekend to request a game. Who they&apos;re playing on busy days stays
-          private to them.
+          {myTeam
+            ? "Click an open weekend to request a game. Who they're playing on busy days stays private to them."
+            : "Who they're playing on busy days stays private to them."}
         </p>
         {weekends.length === 0 ? (
           <p className="text-sm text-ice-dim">This team hasn&apos;t posted any weekends yet.</p>
@@ -101,7 +104,7 @@ export default function TeamDetailPage() {
           <ScheduleGrid
             weekends={weekends}
             opponentName={(oid) => opponentNames[oid] ?? oid}
-            onSelectOpen={(w) => setSelected(w)}
+            onSelectOpen={myTeam ? (w) => setSelected(w) : undefined}
           />
         )}
       </section>
