@@ -216,6 +216,7 @@ function NavLink({
     "/requests": "Requests",
     "/messages": "Messages",
     "/commissioner": "League Schedule",
+    "/commissioner/calendar": "Calendar",
   };
   const active = pathname === href || (href === "/messages" && pathname.startsWith("/messages"));
   return (
