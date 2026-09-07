@@ -101,11 +101,13 @@ export default function TeamDetailPage() {
 
       <section>
         <h2 className="font-display text-lg font-semibold mb-2">Schedule</h2>
-        <p className="text-sm text-ice-dim mb-4">
-          {myTeam
-            ? "Click an open weekend to request a game. Who they're playing on busy days stays private to them."
-            : "Who they're playing on busy days stays private to them."}
-        </p>
+        {(myTeam || !profile?.is_commissioner) && (
+          <p className="text-sm text-ice-dim mb-4">
+            {myTeam
+              ? "Click an open weekend to request a game. Who they're playing on busy days stays private to them."
+              : "Who they're playing on busy days stays private to them."}
+          </p>
+        )}
         {weekends.length === 0 ? (
           <p className="text-sm text-ice-dim">This team hasn&apos;t posted any weekends yet.</p>
         ) : (
