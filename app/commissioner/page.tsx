@@ -25,6 +25,7 @@ export default function CommissionerPage() {
   const supabase = createClient();
   const { profile } = useAuth();
   const league = profile?.commissioner_league ?? null;
+  const sport = profile?.commissioner_sport ?? null;
   const [allTeams, setAllTeams] = useState<Team[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,28 +59,33 @@ export default function CommissionerPage() {
     });
   }, [supabase]);
 
-  // Scope everything to the commissioner's own league. A team belongs to the
-  // league if its conference matches; a game belongs if either side does.
-  const teams = league ? allTeams.filter((t) => t.conference === league) : allTeams;
+  // Scope everything to the commissioner's own league and sport. A team
+  // belongs if both match; a game belongs if either side's team does.
+  const teams = allTeams.filter(
+    (t) => (!league || t.conference === league) && (!sport || t.sport === sport)
+  );
   const leagueTeamIds = new Set(teams.map((t) => t.id));
-  const leagueGames = league
-    ? games.filter((g) => leagueTeamIds.has(g.home.id) || leagueTeamIds.has(g.away.id))
-    : games;
+  const leagueGames =
+    league || sport
+      ? games.filter((g) => leagueTeamIds.has(g.home.id) || leagueTeamIds.has(g.away.id))
+      : games;
 
   const now = new Date().toISOString().slice(0, 10);
   const upcoming = leagueGames.filter((g) => g.weekend.date >= now);
   const past = leagueGames.filter((g) => g.weekend.date < now);
 
+  const scopeLabel = [league, sport].filter(Boolean).join(" · ");
+
   return (
     <div className="space-y-10">
       <div>
         <p className="text-xs uppercase tracking-widest text-faceoff-blue font-mono">
-          Commissioner view{league ? ` · ${league}` : ""}
+          Commissioner view{scopeLabel ? ` · ${scopeLabel}` : ""}
         </p>
         <h1 className="font-display text-3xl font-semibold mt-1">League Schedule</h1>
         <p className="text-ice-dim mt-1">
-          {league
-            ? `Every confirmed game across ${teams.length} ${league} team${teams.length === 1 ? "" : "s"} on ClubSync.`
+          {scopeLabel
+            ? `Every confirmed game across ${teams.length} ${scopeLabel} team${teams.length === 1 ? "" : "s"} on ClubSync.`
             : `Every confirmed game across all ${teams.length} teams on ClubSync.`}
         </p>
       </div>

@@ -24,6 +24,7 @@ export type Profile = {
   email: string;
   is_commissioner: boolean;
   commissioner_league: string | null;
+  commissioner_sport: string | null;
   is_team_admin: boolean;
   member_type: "staff" | "player";
   created_at: string;

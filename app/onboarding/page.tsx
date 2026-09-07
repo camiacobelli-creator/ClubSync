@@ -35,8 +35,9 @@ export default function OnboardingPage() {
   const [role, setRole] = useState("President");
   const [memberType, setMemberType] = useState<"staff" | "player">("staff");
 
-  // Commissioner league selection
+  // Commissioner league + sport selection
   const [commissionerLeague, setCommissionerLeague] = useState("ACC");
+  const [commissionerSport, setCommissionerSport] = useState("Ice Hockey");
 
   useEffect(() => {
     if (profile?.team_id || profile?.is_commissioner) {
@@ -63,7 +64,10 @@ export default function OnboardingPage() {
       setSchools(sc);
       const sportList = (sp.data as Sport[]) ?? [];
       setSports(sportList);
-      if (sportList.length > 0) setSport(sportList[0].name);
+      if (sportList.length > 0) {
+        setSport(sportList[0].name);
+        setCommissionerSport(sportList[0].name);
+      }
     });
   }, [profile, userId, router, supabase]);
 
@@ -167,6 +171,7 @@ export default function OnboardingPage() {
         is_commissioner: true,
         role: "Commissioner",
         commissioner_league: commissionerLeague,
+        commissioner_sport: commissionerSport,
       })
       .eq("id", userId);
     setLoading(false);
@@ -275,17 +280,34 @@ export default function OnboardingPage() {
             For now, ClubSync supports commissioners for the Power 5 conferences.
           </p>
         </div>
-        <select
-          value={commissionerLeague}
-          onChange={(e) => setCommissionerLeague(e.target.value)}
-          className="w-full bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
-        >
-          {POWER_FIVE_CONFERENCES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <div className="text-left">
+          <label className="block text-xs text-ice-dim mb-1">Conference</label>
+          <select
+            value={commissionerLeague}
+            onChange={(e) => setCommissionerLeague(e.target.value)}
+            className="w-full bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
+          >
+            {POWER_FIVE_CONFERENCES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="text-left">
+          <label className="block text-xs text-ice-dim mb-1">Sport</label>
+          <select
+            value={commissionerSport}
+            onChange={(e) => setCommissionerSport(e.target.value)}
+            className="w-full bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
+          >
+            {sports.map((s) => (
+              <option key={s.name} value={s.name}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="grid gap-3">
           <button
             onClick={handleCommissioner}
