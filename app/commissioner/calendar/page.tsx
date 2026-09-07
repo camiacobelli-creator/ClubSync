@@ -10,8 +10,10 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 type Game = {
   weekend: Weekend;
-  home: Team;
-  away: Team;
+  homeName: string;
+  awayName: string;
+  homeTeamId: string | null;
+  awayTeamId: string | null;
 };
 
 function toKey(d: Date) {
@@ -55,19 +57,37 @@ export default function CommissionerCalendarPage() {
       teamList.forEach((tm) => (teamsById[tm.id] = tm));
       setAllTeams(teamList);
 
+      // Each on-platform matchup exists as a mirrored weekend row on both
+      // teams' boards. Dedupe by the matchup itself (team pair + date) rather
+      // than trusting is_home, and include off-platform opponents (which only
+      // ever have a single row) so those games are visible too.
       const scheduled = (w.data as Weekend[]) ?? [];
-      const deduped = scheduled
-        .filter((wk) => wk.is_home === true && wk.opponent_team_id)
-        .map((wk) => {
-          const home = teamsById[wk.team_id];
-          const away = teamsById[wk.opponent_team_id!];
-          if (!home || !away) return null;
-          return { weekend: wk, home, away };
-        })
-        .filter((g): g is Game => g !== null)
-        .sort((a, b) => a.weekend.date.localeCompare(b.weekend.date));
+      const seen = new Set<string>();
+      const list: Game[] = [];
 
-      setGames(deduped);
+      scheduled.forEach((wk) => {
+        const team = teamsById[wk.team_id];
+        if (!team) return;
+        const opponentTeam = wk.opponent_team_id ? teamsById[wk.opponent_team_id] : undefined;
+        const opponentLabel = opponentTeam ? opponentTeam.short_name : wk.opponent_name || "TBD";
+
+        const key = opponentTeam
+          ? [team.id, opponentTeam.id].sort().join("-") + "-" + wk.date
+          : wk.id;
+        if (seen.has(key)) return;
+        seen.add(key);
+
+        list.push({
+          weekend: wk,
+          homeName: wk.is_home ? team.short_name : opponentLabel,
+          awayName: wk.is_home ? opponentLabel : team.short_name,
+          homeTeamId: wk.is_home ? team.id : opponentTeam?.id ?? null,
+          awayTeamId: wk.is_home ? opponentTeam?.id ?? null : team.id,
+        });
+      });
+
+      list.sort((a, b) => a.weekend.date.localeCompare(b.weekend.date));
+      setGames(list);
       setLoading(false);
     });
   }, [supabase]);
@@ -79,7 +99,11 @@ export default function CommissionerCalendarPage() {
   const leagueTeamIds = new Set(leagueTeams.map((t) => t.id));
   const leagueGames =
     league || sport
-      ? games.filter((g) => leagueTeamIds.has(g.home.id) || leagueTeamIds.has(g.away.id))
+      ? games.filter(
+          (g) =>
+            (g.homeTeamId && leagueTeamIds.has(g.homeTeamId)) ||
+            (g.awayTeamId && leagueTeamIds.has(g.awayTeamId))
+        )
       : games;
 
   const scopeLabel = [league, sport].filter(Boolean).join(" · ");
@@ -87,8 +111,8 @@ export default function CommissionerCalendarPage() {
   function handleExportExcel() {
     const rows = leagueGames.map((g) => ({
       Date: g.weekend.date,
-      Away: g.away.short_name,
-      Home: g.home.short_name,
+      Away: g.awayName,
+      Home: g.homeName,
       Time: g.weekend.game_time ?? "",
       Location: g.weekend.game_location ?? "",
       Notes: g.weekend.game_notes ?? "",
@@ -249,7 +273,7 @@ function CalendarView({
                   className="rounded px-1.5 py-1 text-[10px] sm:text-xs leading-tight bg-board-red/15 text-ice"
                 >
                   <span className="block font-medium truncate">
-                    {g.away.short_name} @ {g.home.short_name}
+                    {g.awayName} @ {g.homeName}
                   </span>
                   {g.weekend.game_time && <span className="block opacity-80">{g.weekend.game_time}</span>}
                 </div>
@@ -276,8 +300,8 @@ function ListView({ games }: { games: Game[] }) {
         >
           <div>
             <p className="font-medium text-sm">
-              {g.away.short_name} <span className="text-ice-dim font-normal">at</span>{" "}
-              {g.home.short_name}
+              {g.awayName} <span className="text-ice-dim font-normal">at</span>{" "}
+              {g.homeName}
             </p>
             <p className="text-xs text-ice-dim mt-0.5">{fmt(g.weekend.date)}</p>
           </div>

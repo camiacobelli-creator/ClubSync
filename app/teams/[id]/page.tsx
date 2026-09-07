@@ -13,7 +13,7 @@ export default function TeamDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const supabase = createClient();
-  const { team: myTeam } = useAuth();
+  const { team: myTeam, profile } = useAuth();
 
   const [team, setTeam] = useState<Team | null>(null);
   const [weekends, setWeekends] = useState<Weekend[]>([]);
@@ -27,7 +27,7 @@ export default function TeamDetailPage() {
     Promise.all([
       supabase.from("teams").select("*").eq("id", id).maybeSingle(),
       supabase.rpc("team_schedule_for_viewer", { target_team_id: id }),
-      supabase.from("profiles").select("*").eq("team_id", id),
+      supabase.from("profiles").select("*").eq("team_id", id).eq("member_type", "staff"),
       supabase.from("teams").select("id, short_name"),
     ]).then(([t, w, p, all]) => {
       setTeam(t.data as Team | null);
@@ -69,6 +69,14 @@ export default function TeamDetailPage() {
           {myTeam && (
             <Link
               href={`/messages/${team.id}`}
+              className="px-3 py-1.5 text-sm font-medium rounded-md border border-line-white text-ice-dim hover:text-ice hover:border-faceoff-blue"
+            >
+              Message {team.short_name}
+            </Link>
+          )}
+          {profile?.is_commissioner && (
+            <Link
+              href={`/commissioner/messages/${team.id}`}
               className="px-3 py-1.5 text-sm font-medium rounded-md border border-line-white text-ice-dim hover:text-ice hover:border-faceoff-blue"
             >
               Message {team.short_name}

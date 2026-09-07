@@ -86,3 +86,13 @@ export type MessageRead = {
   other_team_id: string;
   last_read_at: string;
 };
+
+export type CommissionerMessage = {
+  id: string;
+  commissioner_id: string;
+  team_id: string;
+  sender_role: "commissioner" | "team";
+  sender_profile_id: string;
+  body: string;
+  created_at: string;
+};

@@ -19,6 +19,7 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
   const { team: myTeam } = useAuth();
   const [conversations, setConversations] = useState<ConversationInfo[]>([]);
   const [otherTeams, setOtherTeams] = useState<Team[]>([]);
+  const [hasCommissioner, setHasCommissioner] = useState(false);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -36,10 +37,18 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
         .or(`team_a_id.eq.${myTeam.id},team_b_id.eq.${myTeam.id}`)
         .order("created_at", { ascending: false }),
       supabase.from("message_reads").select("*").eq("team_id", myTeam.id),
-    ]).then(([t, m, r]) => {
+      supabase
+        .from("profiles")
+        .select("id")
+        .eq("is_commissioner", true)
+        .eq("commissioner_league", myTeam.conference)
+        .eq("commissioner_sport", myTeam.sport)
+        .limit(1),
+    ]).then(([t, m, r, c]) => {
       const teams = (t.data as Team[]) ?? [];
       const messages = (m.data as Message[]) ?? [];
       const reads = (r.data as MessageRead[]) ?? [];
+      setHasCommissioner(((c.data as { id: string }[]) ?? []).length > 0);
       const readMap: Record<string, string> = {};
       reads.forEach((row) => (readMap[row.other_team_id] = row.last_read_at));
 
@@ -131,6 +140,19 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
             <p className="text-sm text-ice-dim p-3">Loading...</p>
           ) : (
             <>
+              {hasCommissioner && (
+                <Link
+                  href="/messages/commissioner"
+                  className={`block px-3 py-3 border-b border-line-white/50 hover:bg-rink-2 ${
+                    pathname === "/messages/commissioner" ? "bg-rink-2" : ""
+                  }`}
+                >
+                  <p className="text-sm font-medium truncate">League Commissioner</p>
+                  <p className="text-xs text-ice-dim mt-0.5 truncate">
+                    {myTeam?.conference} {myTeam?.sport}
+                  </p>
+                </Link>
+              )}
               {conversations
                 .filter((c) => c.team.short_name.toLowerCase().includes(query.toLowerCase()))
                 .map((c) => (

@@ -172,6 +172,28 @@ export default function TeamProfilePage() {
     reload();
   }
 
+  const KICK_ROLES = ["President", "Vice President", "Head Coach"];
+
+  async function handleRemoveMember(member: Profile) {
+    const admins = roster.filter((p) => p.is_team_admin);
+    if (member.is_team_admin && admins.length <= 1) {
+      alert("You can't remove the last admin. Promote someone else first.");
+      return;
+    }
+    if (
+      !confirm(
+        `Remove ${member.full_name} from ${team?.short_name}? They'll need to be invited or approved to rejoin.`
+      )
+    ) {
+      return;
+    }
+    await supabase
+      .from("profiles")
+      .update({ team_id: null, is_team_admin: false })
+      .eq("id", member.id);
+    reload();
+  }
+
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
@@ -199,6 +221,8 @@ export default function TeamProfilePage() {
   if (loading || !team || !profile) {
     return <p className="text-ice-dim">Loading...</p>;
   }
+
+  const canManageRoster = profile.is_team_admin || KICK_ROLES.includes(profile.role);
 
   return (
     <div className="space-y-10">
@@ -363,9 +387,10 @@ export default function TeamProfilePage() {
 
       <section>
         <h2 className="font-display text-lg font-semibold mb-4">Team roster</h2>
-        {!profile.is_team_admin && (
+        {!canManageRoster && (
           <p className="text-sm text-ice-dim mb-3">
-            Only team admins can promote others. Contact your team admin if you need access.
+            Only team admins, presidents, vice presidents, and head coaches can manage the
+            roster. Contact one of them if you need access.
           </p>
         )}
         <div className="space-y-2">
@@ -389,24 +414,34 @@ export default function TeamProfilePage() {
                   {member.phone && ` · ${member.phone}`}
                 </p>
               </div>
-              {profile.is_team_admin ? (
-                <button
-                  onClick={() => handleToggleAdmin(member)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md shrink-0 ${
-                    member.is_team_admin
-                      ? "bg-faceoff-blue/15 text-faceoff-blue hover:bg-faceoff-blue/25"
-                      : "border border-line-white text-ice-dim hover:text-ice"
-                  }`}
-                >
-                  {member.is_team_admin ? "Admin" : "Make admin"}
-                </button>
-              ) : (
-                member.is_team_admin && (
-                  <span className="text-xs font-mono px-2 py-1 rounded-full bg-faceoff-blue/15 text-faceoff-blue shrink-0">
-                    Admin
-                  </span>
-                )
-              )}
+              <div className="flex items-center gap-2 shrink-0">
+                {profile.is_team_admin ? (
+                  <button
+                    onClick={() => handleToggleAdmin(member)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md shrink-0 ${
+                      member.is_team_admin
+                        ? "bg-faceoff-blue/15 text-faceoff-blue hover:bg-faceoff-blue/25"
+                        : "border border-line-white text-ice-dim hover:text-ice"
+                    }`}
+                  >
+                    {member.is_team_admin ? "Admin" : "Make admin"}
+                  </button>
+                ) : (
+                  member.is_team_admin && (
+                    <span className="text-xs font-mono px-2 py-1 rounded-full bg-faceoff-blue/15 text-faceoff-blue shrink-0">
+                      Admin
+                    </span>
+                  )
+                )}
+                {canManageRoster && member.id !== profile.id && (
+                  <button
+                    onClick={() => handleRemoveMember(member)}
+                    className="px-3 py-1.5 text-xs font-medium rounded-md border border-board-red/40 text-board-red hover:bg-board-red/10 shrink-0"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
