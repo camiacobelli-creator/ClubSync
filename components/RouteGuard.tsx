@@ -21,6 +21,12 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
       !pathname.startsWith("/join/")
     ) {
       router.push("/onboarding");
+      return;
+    }
+    // Commissioners have no team, so the team dashboard at "/" has nothing
+    // to show them — send them straight to their own dashboard instead.
+    if (profile?.is_commissioner && pathname === "/") {
+      router.push("/commissioner");
     }
   }, [loading, userId, profile, pathname, router]);
 

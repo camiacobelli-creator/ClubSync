@@ -45,7 +45,10 @@ export default function Dashboard() {
   const [addError, setAddError] = useState<string | null>(null);
 
   function reload() {
-    if (!team) return;
+    if (!team) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     Promise.all([
       supabase.from("weekends").select("*").eq("team_id", team.id).order("date"),
