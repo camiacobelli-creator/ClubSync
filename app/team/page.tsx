@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 import { Profile } from "@/lib/types";
 import { teamDisplayName } from "@/lib/teamDisplay";
+import { CONFERENCE_OPTIONS } from "@/lib/conferences";
 
 const ROLE_OPTIONS = [
   "President",
@@ -16,8 +17,6 @@ const ROLE_OPTIONS = [
   "Staff",
   "Player",
 ];
-
-const CONFERENCE_OPTIONS = ["ACC", "SEC", "Big Ten", "Big 12", "Independent", "Other"];
 
 export default function TeamProfilePage() {
   const supabase = createClient();
@@ -38,7 +37,12 @@ export default function TeamProfilePage() {
 
   // Team settings form
   const [teamCity, setTeamCity] = useState(team?.city ?? "");
-  const [teamConference, setTeamConference] = useState(team?.conference ?? "ACC");
+  const [teamConference, setTeamConference] = useState(
+    team?.conference && CONFERENCE_OPTIONS.includes(team.conference) ? team.conference : "Other"
+  );
+  const [customTeamConference, setCustomTeamConference] = useState(
+    team?.conference && !CONFERENCE_OPTIONS.includes(team.conference) ? team.conference : ""
+  );
   const [teamSaving, setTeamSaving] = useState(false);
   const [teamSaved, setTeamSaved] = useState(false);
   const [teamError, setTeamError] = useState<string | null>(null);
@@ -93,12 +97,18 @@ export default function TeamProfilePage() {
   async function handleSaveTeam(e: React.FormEvent) {
     e.preventDefault();
     if (!team) return;
+    if (teamConference === "Other" && !customTeamConference.trim()) {
+      setTeamError("Enter your conference name.");
+      return;
+    }
     setTeamSaving(true);
     setTeamSaved(false);
     setTeamError(null);
+    const finalConference =
+      teamConference === "Other" ? customTeamConference.trim() : teamConference;
     const { error: err } = await supabase
       .from("teams")
-      .update({ city: teamCity, conference: teamConference })
+      .update({ city: teamCity, conference: finalConference })
       .eq("id", team.id);
     setTeamSaving(false);
     if (err) {
@@ -300,6 +310,15 @@ export default function TeamProfilePage() {
                   <option key={c}>{c}</option>
                 ))}
               </select>
+              {teamConference === "Other" && (
+                <input
+                  type="text"
+                  placeholder="Enter your conference name"
+                  value={customTeamConference}
+                  onChange={(e) => setCustomTeamConference(e.target.value)}
+                  className="w-full mt-2 bg-rink border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
+                />
+              )}
             </div>
             {teamError && <p className="text-sm text-board-red">{teamError}</p>}
             {teamSaved && <p className="text-sm text-faceoff-blue">Saved.</p>}

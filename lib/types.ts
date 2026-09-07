@@ -23,6 +23,7 @@ export type Profile = {
   phone: string | null;
   email: string;
   is_commissioner: boolean;
+  commissioner_league: string | null;
   is_team_admin: boolean;
   member_type: "staff" | "player";
   created_at: string;

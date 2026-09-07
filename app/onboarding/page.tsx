@@ -6,12 +6,15 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Team, TeamJoinRequest, School, Sport } from "@/lib/types";
 import { fetchAllSchools } from "@/lib/schools";
+import { CONFERENCE_OPTIONS, POWER_FIVE_CONFERENCES } from "@/lib/conferences";
 
 export default function OnboardingPage() {
   const supabase = createClient();
   const router = useRouter();
   const { userId, profile, refresh } = useAuth();
-  const [mode, setMode] = useState<"choose" | "create" | "join" | "checking">("checking");
+  const [mode, setMode] = useState<"choose" | "create" | "join" | "commissioner" | "checking">(
+    "checking"
+  );
   const [teams, setTeams] = useState<Team[]>([]);
   const [pendingRequest, setPendingRequest] = useState<TeamJoinRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +28,15 @@ export default function OnboardingPage() {
   const [newSchoolName, setNewSchoolName] = useState("");
   const [sport, setSport] = useState("Ice Hockey");
   const [teamNumber, setTeamNumber] = useState(1);
+  const [conference, setConference] = useState("ACC");
+  const [customConference, setCustomConference] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [role, setRole] = useState("President");
   const [memberType, setMemberType] = useState<"staff" | "player">("staff");
+
+  // Commissioner league selection
+  const [commissionerLeague, setCommissionerLeague] = useState("ACC");
 
   useEffect(() => {
     if (profile?.team_id || profile?.is_commissioner) {
@@ -71,6 +79,10 @@ export default function OnboardingPage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!userId) return;
+    if (conference === "Other" && !customConference.trim()) {
+      setError("Enter your conference name.");
+      return;
+    }
 
     let finalSchool = school;
 
@@ -94,13 +106,15 @@ export default function OnboardingPage() {
     setLoading(true);
     setError(null);
 
+    const finalConference = conference === "Other" ? customConference.trim() : conference;
+
     const { data: team, error: teamErr } = await supabase
       .from("teams")
       .insert({
         name: `${finalSchool} Club ${sport}`,
         short_name: finalSchool,
         city: state ? `${city}, ${state}` : city,
-        conference: "ACC",
+        conference: finalConference,
         school: finalSchool,
         sport,
         team_number: teamNumber,
@@ -149,7 +163,11 @@ export default function OnboardingPage() {
     setError(null);
     const { error: profileErr } = await supabase
       .from("profiles")
-      .update({ is_commissioner: true, role: "Commissioner" })
+      .update({
+        is_commissioner: true,
+        role: "Commissioner",
+        commissioner_league: commissionerLeague,
+      })
       .eq("id", userId);
     setLoading(false);
     if (profileErr) {
@@ -237,11 +255,50 @@ export default function OnboardingPage() {
             Request to join an existing team
           </button>
           <button
-            onClick={handleCommissioner}
-            disabled={loading}
+            onClick={() => setMode("commissioner")}
             className="rounded-lg border border-line-white px-4 py-3 text-sm font-medium text-ice-dim hover:text-ice hover:border-ice-dim disabled:opacity-50"
           >
             I&apos;m the league commissioner
+          </button>
+        </div>
+        {error && <p className="text-sm text-board-red mt-3">{error}</p>}
+      </div>
+    );
+  }
+
+  if (mode === "commissioner") {
+    return (
+      <div className="max-w-md mx-auto mt-12 text-center space-y-6">
+        <div>
+          <h1 className="font-display text-2xl font-semibold">Which league do you run?</h1>
+          <p className="text-ice-dim text-sm mt-1">
+            For now, ClubSync supports commissioners for the Power 5 conferences.
+          </p>
+        </div>
+        <select
+          value={commissionerLeague}
+          onChange={(e) => setCommissionerLeague(e.target.value)}
+          className="w-full bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
+        >
+          {POWER_FIVE_CONFERENCES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <div className="grid gap-3">
+          <button
+            onClick={handleCommissioner}
+            disabled={loading}
+            className="rounded-lg border border-faceoff-blue bg-faceoff-blue/10 px-4 py-3 text-sm font-medium hover:bg-faceoff-blue/20 disabled:opacity-50"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => setMode("choose")}
+            className="text-sm text-ice-dim hover:text-ice"
+          >
+            Back
           </button>
         </div>
         {error && <p className="text-sm text-board-red mt-3">{error}</p>}
@@ -428,6 +485,29 @@ export default function OnboardingPage() {
             If your school only has one team in this sport, leave this as &quot;1st team&quot; —
             it won&apos;t be shown anywhere unless a 2nd or 3rd team from your school joins later.
           </p>
+        </div>
+        <div>
+          <label className="block text-xs text-ice-dim mb-1">Conference</label>
+          <select
+            value={conference}
+            onChange={(e) => setConference(e.target.value)}
+            className="w-full bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
+          >
+            {CONFERENCE_OPTIONS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          {conference === "Other" && (
+            <input
+              type="text"
+              placeholder="Enter your conference name"
+              value={customConference}
+              onChange={(e) => setCustomConference(e.target.value)}
+              className="w-full mt-2 bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm outline-none focus:border-faceoff-blue"
+            />
+          )}
         </div>
         <select
           value={role}

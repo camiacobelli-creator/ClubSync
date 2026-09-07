@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { Team, Weekend } from "@/lib/types";
 
 type Game = {
@@ -22,7 +23,9 @@ function fmt(iso: string) {
 
 export default function CommissionerPage() {
   const supabase = createClient();
-  const [teams, setTeams] = useState<Team[]>([]);
+  const { profile } = useAuth();
+  const league = profile?.commissioner_league ?? null;
+  const [allTeams, setAllTeams] = useState<Team[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,7 +37,7 @@ export default function CommissionerPage() {
       const teamList = (t.data as Team[]) ?? [];
       const teamsById: Record<string, Team> = {};
       teamList.forEach((tm) => (teamsById[tm.id] = tm));
-      setTeams(teamList);
+      setAllTeams(teamList);
 
       // Each scheduled game exists as a mirrored weekend row on both teams'
       // boards. Keep only the row where is_home is true, so each game shows once.
@@ -55,19 +58,29 @@ export default function CommissionerPage() {
     });
   }, [supabase]);
 
+  // Scope everything to the commissioner's own league. A team belongs to the
+  // league if its conference matches; a game belongs if either side does.
+  const teams = league ? allTeams.filter((t) => t.conference === league) : allTeams;
+  const leagueTeamIds = new Set(teams.map((t) => t.id));
+  const leagueGames = league
+    ? games.filter((g) => leagueTeamIds.has(g.home.id) || leagueTeamIds.has(g.away.id))
+    : games;
+
   const now = new Date().toISOString().slice(0, 10);
-  const upcoming = games.filter((g) => g.weekend.date >= now);
-  const past = games.filter((g) => g.weekend.date < now);
+  const upcoming = leagueGames.filter((g) => g.weekend.date >= now);
+  const past = leagueGames.filter((g) => g.weekend.date < now);
 
   return (
     <div className="space-y-10">
       <div>
         <p className="text-xs uppercase tracking-widest text-faceoff-blue font-mono">
-          Commissioner view
+          Commissioner view{league ? ` · ${league}` : ""}
         </p>
         <h1 className="font-display text-3xl font-semibold mt-1">League Schedule</h1>
         <p className="text-ice-dim mt-1">
-          Every confirmed game across all {teams.length} teams on ClubSync.
+          {league
+            ? `Every confirmed game across ${teams.length} ${league} team${teams.length === 1 ? "" : "s"} on ClubSync.`
+            : `Every confirmed game across all ${teams.length} teams on ClubSync.`}
         </p>
       </div>
 

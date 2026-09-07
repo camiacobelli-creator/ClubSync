@@ -11,7 +11,7 @@ export default function WelcomePage() {
       <section className="pt-8 sm:pt-16 grid lg:grid-cols-2 gap-12 items-center">
         <div>
           <p className="text-xs uppercase tracking-widest text-faceoff-blue font-mono mb-4">
-            Built for club sports · starting with ACC club hockey
+            Built for college club sports
           </p>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold leading-tight">
             Stop scheduling games over email.
