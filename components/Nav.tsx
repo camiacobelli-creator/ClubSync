@@ -24,7 +24,7 @@ const playerLinks = [
 
 const commissionerLinks = [
   { href: "/commissioner", label: "League Schedule" },
-  { href: "/commissioner/calendar", label: "League Calendar" },
+  { href: "/commissioner/calendar", label: "Calendar" },
   { href: "/teams", label: "Browse Teams" },
 ];
 
