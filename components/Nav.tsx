@@ -76,11 +76,14 @@ export default function Nav() {
     });
   }, [team, supabase, pathname]);
 
-  const activeLinks = profile?.is_commissioner
+  const baseLinks = profile?.is_commissioner
     ? commissionerLinks
     : profile?.member_type === "player"
     ? playerLinks
     : links;
+  const activeLinks = profile?.is_site_admin
+    ? [...baseLinks, { href: "/admin/commissioners", label: "Admin" }]
+    : baseLinks;
 
   if (pathname === "/welcome") {
     return (
@@ -223,6 +226,7 @@ function NavLink({
     "/commissioner/calendar": "Calendar",
     "/commissioner/messages": "Messages",
     "/help": "Help",
+    "/admin/commissioners": "Admin",
   };
   const active =
     pathname === href ||

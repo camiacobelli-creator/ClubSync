@@ -12,9 +12,9 @@ export default function OnboardingPage() {
   const supabase = createClient();
   const router = useRouter();
   const { userId, profile, refresh } = useAuth();
-  const [mode, setMode] = useState<"choose" | "create" | "join" | "commissioner" | "checking">(
-    "checking"
-  );
+  const [mode, setMode] = useState<
+    "choose" | "create" | "join" | "commissioner" | "commissioner-pending" | "checking"
+  >("checking");
   const [teams, setTeams] = useState<Team[]>([]);
   const [pendingRequest, setPendingRequest] = useState<TeamJoinRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +42,10 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (profile?.team_id || profile?.is_commissioner) {
       router.push("/");
+      return;
+    }
+    if (profile?.commissioner_status === "pending") {
+      setMode("commissioner-pending");
       return;
     }
     if (!userId) return;
@@ -168,10 +172,10 @@ export default function OnboardingPage() {
     const { error: profileErr } = await supabase
       .from("profiles")
       .update({
-        is_commissioner: true,
         role: "Commissioner",
         commissioner_league: commissionerLeague,
         commissioner_sport: commissionerSport,
+        commissioner_status: "pending",
       })
       .eq("id", userId);
     setLoading(false);
@@ -180,7 +184,23 @@ export default function OnboardingPage() {
       return;
     }
     await refresh();
-    router.push("/commissioner");
+    setMode("commissioner-pending");
+  }
+
+  async function handleCancelCommissionerRequest() {
+    if (!userId) return;
+    setLoading(true);
+    await supabase
+      .from("profiles")
+      .update({
+        commissioner_league: null,
+        commissioner_sport: null,
+        commissioner_status: "none",
+      })
+      .eq("id", userId);
+    setLoading(false);
+    await refresh();
+    setMode("choose");
   }
 
   async function handleRequestToJoin(teamId: string) {
@@ -314,7 +334,7 @@ export default function OnboardingPage() {
             disabled={loading}
             className="rounded-lg border border-faceoff-blue bg-faceoff-blue/10 px-4 py-3 text-sm font-medium hover:bg-faceoff-blue/20 disabled:opacity-50"
           >
-            Confirm
+            Submit for approval
           </button>
           <button
             onClick={() => setMode("choose")}
@@ -324,6 +344,28 @@ export default function OnboardingPage() {
           </button>
         </div>
         {error && <p className="text-sm text-board-red mt-3">{error}</p>}
+      </div>
+    );
+  }
+
+  if (mode === "commissioner-pending") {
+    return (
+      <div className="max-w-md mx-auto mt-12 text-center space-y-6">
+        <div>
+          <h1 className="font-display text-2xl font-semibold">Request pending</h1>
+          <p className="text-ice-dim text-sm mt-2">
+            Your request to be commissioner of {profile?.commissioner_league}{" "}
+            {profile?.commissioner_sport} is awaiting approval. We&apos;ll let you know once
+            it&apos;s reviewed.
+          </p>
+        </div>
+        <button
+          onClick={handleCancelCommissionerRequest}
+          disabled={loading}
+          className="text-sm text-ice-dim hover:text-ice underline disabled:opacity-50"
+        >
+          Cancel request
+        </button>
       </div>
     );
   }

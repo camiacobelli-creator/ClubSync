@@ -25,6 +25,8 @@ export type Profile = {
   is_commissioner: boolean;
   commissioner_league: string | null;
   commissioner_sport: string | null;
+  commissioner_status: "none" | "pending" | "approved" | "denied";
+  is_site_admin: boolean;
   is_team_admin: boolean;
   member_type: "staff" | "player";
   created_at: string;
