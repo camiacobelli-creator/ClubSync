@@ -13,6 +13,7 @@ const links = [
   { href: "/teams", label: "Browse Teams" },
   { href: "/requests", label: "Requests" },
   { href: "/messages", label: "Messages" },
+  { href: "/help", label: "Help" },
 ];
 
 const playerLinks = [
@@ -20,12 +21,15 @@ const playerLinks = [
   { href: "/calendar", label: "Calendar" },
   { href: "/team", label: "Team Profile" },
   { href: "/teams", label: "Browse Teams" },
+  { href: "/help", label: "Help" },
 ];
 
 const commissionerLinks = [
   { href: "/commissioner", label: "League Schedule" },
   { href: "/commissioner/calendar", label: "Calendar" },
+  { href: "/commissioner/messages", label: "Messages" },
   { href: "/teams", label: "Browse Teams" },
+  { href: "/help", label: "Help" },
 ];
 
 export default function Nav() {
@@ -217,8 +221,13 @@ function NavLink({
     "/messages": "Messages",
     "/commissioner": "League Schedule",
     "/commissioner/calendar": "Calendar",
+    "/commissioner/messages": "Messages",
+    "/help": "Help",
   };
-  const active = pathname === href || (href === "/messages" && pathname.startsWith("/messages"));
+  const active =
+    pathname === href ||
+    (href === "/messages" && pathname.startsWith("/messages")) ||
+    (href === "/commissioner/messages" && pathname.startsWith("/commissioner/messages"));
   return (
     <Link
       href={href}

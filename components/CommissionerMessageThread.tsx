@@ -31,6 +31,7 @@ export default function CommissionerMessageThread({
   const supabase = createClient();
   const [thread, setThread] = useState<MessageWithSender[]>([]);
   const [draft, setDraft] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,13 +79,18 @@ export default function CommissionerMessageThread({
     if (!draft.trim()) return;
     const body = draft.trim();
     setDraft("");
-    await supabase.from("commissioner_messages").insert({
+    setError(null);
+    const { error: err } = await supabase.from("commissioner_messages").insert({
       commissioner_id: commissionerId,
       team_id: teamId,
       sender_role: senderRole,
       sender_profile_id: senderProfileId,
       body,
     });
+    if (err) {
+      setError(err.message);
+      setDraft(body);
+    }
   }
 
   return (
@@ -112,20 +118,25 @@ export default function CommissionerMessageThread({
         })}
         <div ref={bottomRef} />
       </div>
-      <div className="border-t border-line-white p-3 flex gap-2">
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder={senderRole === "commissioner" ? "Message this team..." : "Message the commissioner..."}
-          className="flex-1 bg-rink border border-line-white rounded-md px-3 py-2 text-sm text-ice placeholder:text-ice-dim/60 outline-none focus:border-faceoff-blue"
-        />
-        <button
-          onClick={handleSend}
-          className="px-4 py-2 text-sm font-medium rounded-md bg-faceoff-blue text-ice hover:bg-faceoff-blue/90"
-        >
-          Send
-        </button>
+      <div className="border-t border-line-white p-3">
+        {error && <p className="text-xs text-board-red mb-2">{error}</p>}
+        <div className="flex gap-2">
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder={
+              senderRole === "commissioner" ? "Message this team..." : "Message the commissioner..."
+            }
+            className="flex-1 bg-rink border border-line-white rounded-md px-3 py-2 text-sm text-ice placeholder:text-ice-dim/60 outline-none focus:border-faceoff-blue"
+          />
+          <button
+            onClick={handleSend}
+            className="px-4 py-2 text-sm font-medium rounded-md bg-faceoff-blue text-ice hover:bg-faceoff-blue/90"
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );

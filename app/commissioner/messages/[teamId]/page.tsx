@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
@@ -44,15 +43,10 @@ export default function CommissionerMessageThreadPage() {
   }
 
   return (
-    <div className="h-[70vh] flex flex-col">
-      <div className="flex items-center gap-2 mb-3">
-        <Link href="/commissioner" className="text-ice-dim hover:text-ice p-1 -ml-1">
-          ←
-        </Link>
-        <div>
-          <h1 className="font-display text-lg font-semibold">{team.short_name}</h1>
-          <p className="text-xs text-ice-dim">Direct thread between you and this team.</p>
-        </div>
+    <div className="h-full flex flex-col">
+      <div className="mb-3">
+        <h1 className="font-display text-lg font-semibold">{team.short_name}</h1>
+        <p className="text-xs text-ice-dim">Direct thread between you and this team.</p>
       </div>
       <div className="flex-1 min-h-0">
         <CommissionerMessageThread
