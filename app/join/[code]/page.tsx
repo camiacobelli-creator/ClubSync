@@ -89,7 +89,7 @@ export default function JoinByInvitePage() {
         <h1 className="font-display text-2xl font-semibold">You&apos;re already on a team</h1>
         <p className="text-ice-dim text-sm">
           Your account is already linked to a team. If you meant to join{" "}
-          <span className="text-ice">{team?.short_name}</span> instead, contact Clubslate
+          <span className="text-ice">{team?.short_name}</span> instead, contact ClubSlate
           support or use a different account.
         </p>
       </div>

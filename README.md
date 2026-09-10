@@ -1,4 +1,4 @@
-# Clubslate
+# ClubSlate
 
 A real, multi-user club hockey scheduling app. Every team gets a login,
 a shared schedule, game requests, and team-to-team messaging — backed by a

@@ -312,7 +312,7 @@ export default function TeamProfilePage() {
                 className="w-full bg-rink border border-line-white rounded-md px-3 py-2 text-sm text-ice-dim opacity-60 cursor-not-allowed"
               />
               <p className="text-xs text-ice-dim mt-1">
-                Contact Clubslate support to change your school.
+                Contact ClubSlate support to change your school.
               </p>
             </div>
             <div>

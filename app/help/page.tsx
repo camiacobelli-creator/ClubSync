@@ -41,7 +41,7 @@ export default function HelpPage() {
         <p className="text-xs uppercase tracking-widest text-faceoff-blue font-mono">Support</p>
         <h1 className="font-display text-3xl font-semibold mt-1">Help</h1>
         <p className="text-ice-dim mt-1">
-          Run into a bug or have a question? Send a message directly to the Clubslate team.
+          Run into a bug or have a question? Send a message directly to the ClubSlate team.
         </p>
       </div>
       {sent ? (
