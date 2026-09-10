@@ -90,7 +90,7 @@ export default function Nav() {
       <header className="border-b border-line-white sticky top-0 z-20 bg-rink/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           <span className="font-display text-xl font-semibold tracking-wide">
-            Club<span className="text-faceoff-blue">Sync</span>
+            Club<span className="text-faceoff-blue">slate</span>
           </span>
           <div className="flex items-center gap-2">
             <Link
@@ -117,7 +117,7 @@ export default function Nav() {
       <header className="border-b border-line-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center">
           <span className="font-display text-xl font-semibold tracking-wide">
-            Club<span className="text-faceoff-blue">Sync</span>
+            Club<span className="text-faceoff-blue">slate</span>
           </span>
         </div>
       </header>
@@ -130,7 +130,7 @@ export default function Nav() {
         <Link href={profile?.is_commissioner ? "/commissioner" : "/"} className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-faceoff-blue inline-block" />
           <span className="font-display text-xl font-semibold tracking-wide">
-            Club<span className="text-faceoff-blue">Sync</span>
+            Club<span className="text-faceoff-blue">slate</span>
           </span>
         </Link>
 
