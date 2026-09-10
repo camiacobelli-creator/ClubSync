@@ -45,8 +45,19 @@ export default function CommissionerMessageThread({
         .eq("team_id", teamId)
         .order("created_at", { ascending: true });
       if (active) setThread((data as MessageWithSender[]) ?? []);
+      markRead();
     }
     load();
+
+    function markRead() {
+      supabase
+        .from("commissioner_message_reads")
+        .upsert(
+          { commissioner_id: commissionerId, team_id: teamId, reader_role: senderRole },
+          { onConflict: "commissioner_id,team_id,reader_role" }
+        )
+        .then(() => {});
+    }
 
     const channel = supabase
       .channel(`commissioner-messages-${commissionerId}-${teamId}`)
@@ -59,6 +70,7 @@ export default function CommissionerMessageThread({
             const name = m.sender_profile_id === senderProfileId ? senderName : undefined;
             setThread((prev) => [...prev, { ...m, sender: name ? { full_name: name } : null }]);
             if (!name) load();
+            markRead();
           }
         }
       )

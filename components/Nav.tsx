@@ -39,6 +39,8 @@ export default function Nav() {
   const { team, profile, signOut } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [commissionerThreadUnread, setCommissionerThreadUnread] = useState(false);
+  const [commissionerUnread, setCommissionerUnread] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -75,6 +77,91 @@ export default function Nav() {
       setUnreadCount(unread);
     });
   }, [team, supabase, pathname]);
+
+  // Team side: is there an unread message from the league commissioner?
+  useEffect(() => {
+    if (!team || profile?.is_commissioner) return;
+    supabase
+      .from("profiles")
+      .select("id")
+      .eq("is_commissioner", true)
+      .eq("commissioner_league", team.conference)
+      .eq("commissioner_sport", team.sport)
+      .then(({ data }) => {
+        const commissionerIds = ((data as { id: string }[]) ?? []).map((c) => c.id);
+        if (commissionerIds.length === 0) {
+          setCommissionerThreadUnread(false);
+          return;
+        }
+        Promise.all([
+          supabase
+            .from("commissioner_messages")
+            .select("commissioner_id, created_at")
+            .eq("team_id", team.id)
+            .eq("sender_role", "commissioner")
+            .in("commissioner_id", commissionerIds),
+          supabase
+            .from("commissioner_message_reads")
+            .select("commissioner_id, last_read_at")
+            .eq("team_id", team.id)
+            .eq("reader_role", "team"),
+        ]).then(([m, r]) => {
+          const reads: Record<string, string> = {};
+          (r.data ?? []).forEach((row: { commissioner_id: string; last_read_at: string }) => {
+            reads[row.commissioner_id] = row.last_read_at;
+          });
+          const unread = (m.data ?? []).some(
+            (msg: { commissioner_id: string; created_at: string }) => {
+              const lastRead = reads[msg.commissioner_id];
+              return !lastRead || msg.created_at > lastRead;
+            }
+          );
+          setCommissionerThreadUnread(unread);
+        });
+      });
+  }, [team, profile, supabase, pathname]);
+
+  // Commissioner side: how many teams have an unread message from them?
+  useEffect(() => {
+    if (!profile?.is_commissioner) return;
+    const league = profile.commissioner_league;
+    const sport = profile.commissioner_sport;
+    Promise.all([
+      supabase.from("teams").select("id, conference, sport"),
+      supabase
+        .from("commissioner_messages")
+        .select("team_id, created_at")
+        .eq("commissioner_id", profile.id)
+        .eq("sender_role", "team"),
+      supabase
+        .from("commissioner_message_reads")
+        .select("team_id, last_read_at")
+        .eq("commissioner_id", profile.id)
+        .eq("reader_role", "commissioner"),
+    ]).then(([t, m, r]) => {
+      const leagueTeamIds = new Set(
+        ((t.data as { id: string; conference: string; sport: string }[]) ?? [])
+          .filter((tm) => (!league || tm.conference === league) && (!sport || tm.sport === sport))
+          .map((tm) => tm.id)
+      );
+      const reads: Record<string, string> = {};
+      (r.data ?? []).forEach((row: { team_id: string; last_read_at: string }) => {
+        reads[row.team_id] = row.last_read_at;
+      });
+      const latestByTeam: Record<string, string> = {};
+      (m.data ?? []).forEach((msg: { team_id: string; created_at: string }) => {
+        if (!leagueTeamIds.has(msg.team_id)) return;
+        if (!latestByTeam[msg.team_id] || msg.created_at > latestByTeam[msg.team_id]) {
+          latestByTeam[msg.team_id] = msg.created_at;
+        }
+      });
+      const unreadTeams = Object.keys(latestByTeam).filter((tid) => {
+        const lastRead = reads[tid];
+        return !lastRead || latestByTeam[tid] > lastRead;
+      });
+      setCommissionerUnread(unreadTeams.length);
+    });
+  }, [profile, supabase, pathname]);
 
   const baseLinks = profile?.is_commissioner
     ? commissionerLinks
@@ -141,7 +228,15 @@ export default function Nav() {
               key={l.href}
               href={l.href}
               pathname={pathname}
-              badgeCount={l.href === "/requests" ? pendingCount : l.href === "/messages" ? unreadCount : 0}
+              badgeCount={
+                l.href === "/requests"
+                  ? pendingCount
+                  : l.href === "/messages"
+                  ? unreadCount + (commissionerThreadUnread ? 1 : 0)
+                  : l.href === "/commissioner/messages"
+                  ? commissionerUnread
+                  : 0
+              }
             />
           ))}
           {profile && (
@@ -183,7 +278,15 @@ export default function Nav() {
               key={l.href}
               href={l.href}
               pathname={pathname}
-              badgeCount={l.href === "/requests" ? pendingCount : l.href === "/messages" ? unreadCount : 0}
+              badgeCount={
+                l.href === "/requests"
+                  ? pendingCount
+                  : l.href === "/messages"
+                  ? unreadCount + (commissionerThreadUnread ? 1 : 0)
+                  : l.href === "/commissioner/messages"
+                  ? commissionerUnread
+                  : 0
+              }
               block
             />
           ))}

@@ -10,6 +10,8 @@ export default function TeamsPage() {
   const supabase = createClient();
   const { team: myTeam } = useAuth();
   const [query, setQuery] = useState("");
+  const [sportFilter, setSportFilter] = useState("All sports");
+  const [conferenceFilter, setConferenceFilter] = useState("All conferences");
   const [teams, setTeams] = useState<Team[]>([]);
   const [weekendsByTeam, setWeekendsByTeam] = useState<Record<string, Weekend[]>>({});
   const [loading, setLoading] = useState(true);
@@ -30,8 +32,19 @@ export default function TeamsPage() {
     });
   }, [supabase]);
 
+  const sportOptions = [
+    "All sports",
+    ...Array.from(new Set(teams.map((t) => t.sport).filter((s): s is string => !!s))).sort(),
+  ];
+  const conferenceOptions = [
+    "All conferences",
+    ...Array.from(new Set(teams.map((t) => t.conference))).sort(),
+  ];
+
   const others = teams
     .filter((t) => t.id !== myTeam?.id)
+    .filter((t) => sportFilter === "All sports" || t.sport === sportFilter)
+    .filter((t) => conferenceFilter === "All conferences" || t.conference === conferenceFilter)
     .filter(
       (t) =>
         t.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -45,12 +58,36 @@ export default function TeamsPage() {
         <p className="text-ice-dim mt-1">Find an opponent and see when they&apos;re open.</p>
       </div>
 
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search by team or city..."
-        className="w-full sm:w-80 bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm text-ice placeholder:text-ice-dim/60 outline-none focus:border-faceoff-blue"
-      />
+      <div className="flex flex-wrap gap-3">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by team or city..."
+          className="w-full sm:w-80 bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm text-ice placeholder:text-ice-dim/60 outline-none focus:border-faceoff-blue"
+        />
+        <select
+          value={sportFilter}
+          onChange={(e) => setSportFilter(e.target.value)}
+          className="bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm text-ice outline-none focus:border-faceoff-blue"
+        >
+          {sportOptions.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+        <select
+          value={conferenceFilter}
+          onChange={(e) => setConferenceFilter(e.target.value)}
+          className="bg-rink-2 border border-line-white rounded-md px-3 py-2 text-sm text-ice outline-none focus:border-faceoff-blue"
+        >
+          {conferenceOptions.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {loading ? (
         <p className="text-sm text-ice-dim">Loading teams...</p>

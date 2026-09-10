@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 import { Weekend, Team } from "@/lib/types";
+import * as XLSX from "xlsx";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -67,6 +68,39 @@ export default function CalendarPage() {
     return "TBD";
   }
 
+  function handleExportExcel() {
+    if (!team) return;
+    const scheduled = weekends
+      .filter((w) => w.status === "scheduled")
+      .slice()
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    const rows = scheduled.map((w) => {
+      const opponent = opponentLabel(w);
+      return {
+        Date: w.date,
+        Away: w.is_home ? opponent : team.short_name,
+        Home: w.is_home ? team.short_name : opponent,
+        Time: w.game_time ?? "",
+        Location: w.game_location ?? "",
+        Notes: w.game_notes ?? "",
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    worksheet["!cols"] = [
+      { wch: 12 },
+      { wch: 22 },
+      { wch: 22 },
+      { wch: 10 },
+      { wch: 24 },
+      { wch: 30 },
+    ];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Schedule");
+    XLSX.writeFile(workbook, `${team.short_name.replace(/\s+/g, "-")}-schedule.xlsx`);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -101,6 +135,12 @@ export default function CalendarPage() {
             className="ml-1 px-3 py-2 text-sm text-ice-dim hover:text-ice"
           >
             Today
+          </button>
+          <button
+            onClick={handleExportExcel}
+            className="ml-1 px-3 py-2 text-sm font-medium rounded-md border border-line-white text-ice-dim hover:text-ice hover:border-faceoff-blue"
+          >
+            Export to Excel
           </button>
         </div>
       </div>

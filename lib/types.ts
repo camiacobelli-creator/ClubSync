@@ -98,3 +98,10 @@ export type CommissionerMessage = {
   body: string;
   created_at: string;
 };
+
+export type CommissionerMessageRead = {
+  commissioner_id: string;
+  team_id: string;
+  reader_role: "commissioner" | "team";
+  last_read_at: string;
+};

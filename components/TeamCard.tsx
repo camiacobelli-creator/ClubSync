@@ -13,7 +13,7 @@ export default function TeamCard({ team, weekends }: { team: Team; weekends: Wee
         <div>
           <h3 className="font-display text-lg font-semibold">{team.short_name}</h3>
           <p className="text-xs text-ice-dim mt-0.5">
-            {team.city} · {team.conference}
+            {team.sport} · {team.city} · {team.conference}
           </p>
         </div>
         <span
