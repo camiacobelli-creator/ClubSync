@@ -23,7 +23,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ClubSync — Club Hockey Scheduling",
+  title: "Clubslate — Scheduling for Club Sports",
   description: "Schedule games between club hockey teams without the email chain.",
 };
 

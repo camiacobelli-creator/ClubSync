@@ -263,7 +263,7 @@ export default function OnboardingPage() {
           <h1 className="font-display text-2xl font-semibold">One more step</h1>
           <p className="text-ice-dim text-sm mt-1">
             Create your team&apos;s profile, or request to join one that&apos;s already on
-            ClubSync.
+            Clubslate.
           </p>
         </div>
         <div className="grid gap-3">
@@ -297,7 +297,7 @@ export default function OnboardingPage() {
         <div>
           <h1 className="font-display text-2xl font-semibold">Which league do you run?</h1>
           <p className="text-ice-dim text-sm mt-1">
-            For now, ClubSync supports commissioners for the Power 5 conferences.
+            For now, Clubslate supports commissioners for the Power 5 conferences.
           </p>
         </div>
         <div className="text-left">

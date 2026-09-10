@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "ClubSync — Scheduling for club sports",
+  title: "Clubslate — Scheduling for club sports",
 };
 
 export default function WelcomePage() {
@@ -17,7 +17,7 @@ export default function WelcomePage() {
             Stop scheduling games over email.
           </h1>
           <p className="text-ice-dim text-lg mt-5 max-w-lg">
-            ClubSync is where club sports teams post their open weekends, request games
+            Clubslate is where club sports teams post their open weekends, request games
             against other teams, and message each other — all in one shared place your
             whole staff can see. Never again will two people from the same team
             accidentally email the same contact.
@@ -122,7 +122,7 @@ export default function WelcomePage() {
 
       {/* ============ FINAL CTA ============ */}
       <section className="rounded-2xl border border-faceoff-blue/40 bg-faceoff-blue/5 px-6 sm:px-12 py-14 text-center">
-        <h2 className="font-display text-3xl font-semibold">Get your team on ClubSync.</h2>
+        <h2 className="font-display text-3xl font-semibold">Get your team on Clubslate.</h2>
         <p className="text-ice-dim mt-3 max-w-md mx-auto">
           Free, and set up in a couple minutes — pick your school, invite your staff, and post
           your first open weekend.

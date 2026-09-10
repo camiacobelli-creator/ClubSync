@@ -1,4 +1,4 @@
-# ClubSync
+# Clubslate
 
 A real, multi-user club hockey scheduling app. Every team gets a login,
 a shared schedule, game requests, and team-to-team messaging — backed by a
@@ -56,7 +56,7 @@ You'll need [Node.js](https://nodejs.org) (the "LTS" version). Check with:
 node -v
 ```
 
-Then, from inside the `clubsync` folder:
+Then, from inside the `clubslate` folder:
 
 ```
 npm install

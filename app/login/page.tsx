@@ -32,7 +32,7 @@ function LoginForm() {
   return (
     <div className="max-w-sm mx-auto mt-12">
       <h1 className="font-display text-2xl font-semibold">Log in</h1>
-      <p className="text-ice-dim text-sm mt-1">Welcome back to ClubSync.</p>
+      <p className="text-ice-dim text-sm mt-1">Welcome back to Clubslate.</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-3">
         <input

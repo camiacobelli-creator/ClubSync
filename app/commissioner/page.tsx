@@ -107,8 +107,8 @@ export default function CommissionerPage() {
         <h1 className="font-display text-3xl font-semibold mt-1">League Schedule</h1>
         <p className="text-ice-dim mt-1">
           {scopeLabel
-            ? `Every confirmed game across ${teams.length} ${scopeLabel} team${teams.length === 1 ? "" : "s"} on ClubSync.`
-            : `Every confirmed game across all ${teams.length} teams on ClubSync.`}
+            ? `Every confirmed game across ${teams.length} ${scopeLabel} team${teams.length === 1 ? "" : "s"} on Clubslate.`
+            : `Every confirmed game across all ${teams.length} teams on Clubslate.`}
         </p>
       </div>
 

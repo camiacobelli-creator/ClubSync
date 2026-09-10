@@ -524,7 +524,7 @@ export default function Dashboard() {
             <div className="flex flex-wrap items-end gap-3 pt-1 border-t border-line-white/50">
               <p className="w-full text-xs text-ice-dim pt-3">
                 All optional — fill in what you know now, edit the rest later. Picking a team
-                already on ClubSync sends them a request to confirm the game.
+                already on Clubslate sends them a request to confirm the game.
               </p>
               <div>
                 <label className="block text-xs text-ice-dim mb-1">Opponent</label>
@@ -541,7 +541,7 @@ export default function Dashboard() {
                         {t.short_name}
                       </option>
                     ))}
-                  <option value="other">Other (not on ClubSync)</option>
+                  <option value="other">Other (not on Clubslate)</option>
                 </select>
               </div>
               {newOpponentTeamId === "other" && (
@@ -560,7 +560,7 @@ export default function Dashboard() {
                     ))}
                   </select>
                   <p className="text-xs text-ice-dim mt-1">
-                    If they join ClubSync later, this links up and sends them a request
+                    If they join Clubslate later, this links up and sends them a request
                     automatically.
                   </p>
                 </div>
@@ -771,7 +771,7 @@ function GameRow({
                   {t.short_name}
                 </option>
               ))}
-            <option value="other">Other (not on ClubSync)</option>
+            <option value="other">Other (not on Clubslate)</option>
           </select>
         </div>
         {opponentTeamId === "other" && (

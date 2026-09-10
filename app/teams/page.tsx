@@ -60,7 +60,7 @@ export default function TeamsPage() {
             <TeamCard key={t.id} team={t} weekends={weekendsByTeam[t.id] ?? []} />
           ))}
           {others.length === 0 && (
-            <p className="text-sm text-ice-dim">No other teams on ClubSync yet.</p>
+            <p className="text-sm text-ice-dim">No other teams on Clubslate yet.</p>
           )}
         </div>
       )}
